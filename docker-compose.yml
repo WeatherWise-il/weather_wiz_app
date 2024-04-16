@@ -1,0 +1,23 @@
+version: '3'
+services:
+  flask_app:
+    build: ./backend/
+    container_name: flask_app
+    secrets:
+      - app_api_key
+    ports:
+      - "5100:5100"
+    depends_on:
+      mysql_db:
+        condition: service_healthy    
+
+  mysql_db:
+    build: ./db/
+    container_name: mysql_db
+    restart: always
+    ports:
+      - "3306:3306"
+
+secrets:
+   app_api_key:
+    file: app_api_secret.txt

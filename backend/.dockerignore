@@ -1,0 +1,3 @@
+Dockerfile
+app.log
+*secret.txt

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href= "{{ url_for('static',filename='/styles/404.css') }}">
+    <script src="{{url_for('static', filename='js/404.js')}}"></script>
+    {% if title %}
+     <title>{{title}}</title>
+    {%else%}
+    <title>Home</title>
+    {%endif%}
+</head>
+<body>
+<div class="content">
+    <canvas class="snow" id="snow"></canvas>
+    <div class="main-text">
+      <h1>Opps<br/>That page has gone missing.</h1><a class="home-link" href="{{url_for('home')}}">Let's go back home</a>
+    </div>
+    <div class="ground">
+      <div class="mound"> 
+        <div class="mound_text">404</div>
+        <div class="mound_spade"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
