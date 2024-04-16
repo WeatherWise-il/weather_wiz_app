@@ -1,5 +1,5 @@
 
-![Logo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/th5xamgrr6se0x5ro4g6.png)
+![Logo](https://raw.githubusercontent.com/WeatherWise-il/weather_wiz_app/aba8e3da3e69f46ce384898e0346327e422e2cf3/backend/static/images/navbar_logo.svg)
 
 
 # Weather WIZ
