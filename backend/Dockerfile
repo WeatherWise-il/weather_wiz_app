@@ -1,9 +1,8 @@
-FROM arm64v8/python:3.10-slim-bullseye
+FROM python:3.10-slim-bullseye as base
 
 WORKDIR /app
 COPY requirements.txt .
-RUN pip3 install --upgrade setuptools
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
 
 ENV FLASK_PORT=5100
 ENV FLASK_HOST=0.0.0.0
@@ -14,7 +13,14 @@ ENV DB_HOST=mysql_db
 ENV DB_NAME=weather_db
 ENV DB_PORT=3306
 
-COPY . .
+COPY . . 
+RUN rm requirements.txt
+
+FROM base
+WORKDIR /app
+# Copy the installed dependencies from the previous stage
+COPY --from=base /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=base /app  .
 # Define app_user group and user
 RUN groupadd -g 500 app_user && useradd --shell /bin/bash -u 500 -g 500 -o -c "" -m app_user && \
 chmod -R 774 /app &&  \
