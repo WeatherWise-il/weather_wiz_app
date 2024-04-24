@@ -1,40 +1,134 @@
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  version: "1.0.0"
-  title: "Weather wiz API documentation"
-basePath: "/api"
-
+  title: Weather App API
+  version: 1.0.0
+  description: API documentation for the Weather App.
+servers:
+  - url: http://localhost:5000
+    description: Local development server
 paths:
-  /users:
+  /weather:
     get:
-      summary: "Get all users"
+      summary: Get weather data
+      description: Get weather data for countries
       responses:
-        200:
-          description: "Successful response"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/User"
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: string
     post:
-      summary: "Create a new user"
+      summary: Update weather data
+      description: Update weather data for countries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /get_cities:
+    get:
+      summary: Get cities by country
+      description: Get cities by country name
       parameters:
-        - name: "user"
-          in: "body"
-          description: "User object"
+        - name: countries
+          in: query
+          description: Country name
           required: true
           schema:
-            $ref: "#/definitions/User"
+            type: string
       responses:
-        201:
-          description: "User created"
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /search:
+    get:
+      summary: Search cities
+      description: Search cities by name
+      parameters:
+        - name: search_term
+          in: query
+          description: Search term
+          required: true
           schema:
-            $ref: "#/definitions/User"
-
-definitions:
-  User:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-      name:
-        type: "string"
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    city_id:
+                      type: integer
+                    city_name:
+                      type: string
+  /get_weather:
+    post:
+      summary: Get weather forecast
+      description: Get weather forecast for a city
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                select_field:
+                  type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        valid_date:
+                          type: string
+                        weekday:
+                          type: string
+                        temp:
+                          type: number
+                        min_temp:
+                          type: number
+                        max_temp:
+                          type: number
+                        sunrise_ts:
+                          type: string
+                        sunset_ts:
+                          type: string
+                        weather_desc:
+                          type: string
+                        weather_icon:
+                          type: string

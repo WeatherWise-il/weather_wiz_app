@@ -1,5 +1,15 @@
 version: '3'
 services:
+  front_end:
+    build:  ./frontend/
+    container_name: frontend
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - flask_app
+
+
   flask_app:
     build: ./backend/
     container_name: flask_app
@@ -9,7 +19,13 @@ services:
       - "5100:5100"
     depends_on:
       mysql_db:
-        condition: service_healthy    
+        condition: service_healthy
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
 
   mysql_db:
     build: ./db/
