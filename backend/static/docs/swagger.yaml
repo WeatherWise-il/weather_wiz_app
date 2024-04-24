@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API documentation for the Weather App.
 servers:
-  - url: http://localhost:5000
+  - url: http://localhost
     description: Local development server
 paths:
   /weather:
