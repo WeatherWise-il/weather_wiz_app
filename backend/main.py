@@ -12,6 +12,9 @@ from flask_htmx import HTMX
 import requests
 import datetime
 import pytz
+from datetime import datetime
+import pytz
+from typing import Dict
 
 
 dictConfig(
@@ -105,82 +108,91 @@ def page_not_found(e):
 
 
 @app.get("/weather")
-def get_weater_backend():
+def get_weather_backend():
     return json.dumps({"results": "contries_res"}), 200
 
 
 app.cities = None
 app.cities_only = None
-app.contries = None
-
-
-def convertEpochToTime(epoch):
-    jerusalem_tz = pytz.timezone("Asia/Jerusalem")  # Specify Jerusalem time zone
-    dt = datetime.datetime.fromtimestamp(epoch, jerusalem_tz)
-    return dt.strftime("%I:%M:%S %p").lower()
-
-
-def convert_date_to_weekday(date: str):
-    date_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
-    day_of_week = date_obj.strftime("%A")
-    return day_of_week
-
-
-def convert_date_format(date: str):
-    date_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
-    new_format = date_obj.strftime("%d/%m/%Y")
-    return new_format
-
-
-def get_city_forcast(city_data: list[dict]):
+def convert_epoch_to_time(epoch):
     """
-    Get the weather forecast for a city.
-    """
-    app.logger.info(f"Getting the weather forcast for city: {city_data}")
-
-    app.logger.info(f"### cityy_data = {city_data}### ")
-    city_lat: str = city_data.get("city_lat")
-    city_lon: str = city_data.get("city_lon")
-    REST_ENDPOINT_URL: str = f"https://api.weatherbit.io/v2.0/forecast/daily?lat={city_lat}&lon={city_lon}&units=M&key={app_api_key}&days=5"
-    app.logger.info(f"REST_ENDPOINT_URL = {REST_ENDPOINT_URL}")
-    response = requests.get(REST_ENDPOINT_URL)
-    print(f"response = {response.encoding}")
-
-    city_forcast: list = []
-    for item in response.json().get("data"):
-        city_forcast.append(
-            {
-                "valid_date": convert_date_format(item.get("valid_date")),
-                "weekday": convert_date_to_weekday(item.get("valid_date")),
-                "temp": item.get("temp"),
-                "min_temp": item.get("min_temp"),
-                "max_temp": item.get("max_temp"),
-                "sunrise_ts": convertEpochToTime(item.get("sunrise_ts")),
-                "sunset_ts": convertEpochToTime(item.get("sunset_ts")),
-                "weather_desc": item.get("weather").get("description"),
-                "weather_icon": item.get("weather").get("icon"),
-            }
-        )
-    app.logger.debug(f"city_forcast results: {city_forcast}")
-    return city_forcast
+    Convert an epoch time to a human-readable time.
+        """
+        jerusalem_tz = pytz.timezone("Asia/Jerusalem")  # Specify Jerusalem time zone
+        dt = datetime.datetime.fromtimestamp(epoch, jerusalem_tz)
+        return dt.strftime("%I:%M:%S %p").lower()
 
 
-@app.before_first_request
-def before_first_request():
-    print("Running before any request")
-    """
-    Executes a database query and stores results in global_data before first request.
-    """
-    try:
-        app.cities = [u.__dict__ for u in Cities.query.all()]
-        list_of_contries = [item.get("country_full") for item in app.cities]
-        app.contries = list(dict.fromkeys(list_of_contries))
-        app.contries.sort()
-        app.cities_only = [item.get("city_name") for item in app.cities]
-        app.cities_only.sort()
-        app.logger.info("Database query executed successfully")
-    except Exception as e:
-        print(f"Error querying database: {e}")
+    def convert_date_to_weekday(date: str):
+        date_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
+        day_of_week = date_obj.strftime("%A")
+        return day_of_week
+
+
+    def convert_date_format(date: str):
+        date_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
+        new_format = date_obj.strftime("%d/%m/%Y")
+        return new_format
+
+
+    def get_city_forcast(city_data: list[dict]):
+        """
+        Get the weather forecast for a city.
+        """
+        app.logger.info(f"Getting the weather forcast for city: {city_data}")
+
+        app.logger.info(f"### cityy_data = {city_data}### ")
+        city_lat: str = city_data.get("city_lat")
+        city_lon: str = city_data.get("city_lon")
+        REST_ENDPOINT_URL: str = f"https://api.weatherbit.io/v2.0/forecast/daily?lat={city_lat}&lon={city_lon}&units=M&key={app_api_key}&days=5"
+        app.logger.info(f"REST_ENDPOINT_URL = {REST_ENDPOINT_URL}")
+        response = requests.get(REST_ENDPOINT_URL)
+        print(f"response = {response.encoding}")
+        def convert_epoch_to_time(epoch):
+            """
+            Convert an epoch time to a human-readable time.
+            """
+            jerusalem_tz = pytz.timezone("Asia/Jerusalem")  # Specify Jerusalem time zone
+            dt = datetime.fromtimestamp(epoch, jerusalem_tz)
+            return dt.strftime("%I:%M:%S %p").lower()
+
+
+        city_forcast: list = []
+        for item in response.json().get("data"):
+            if city_data is not None:  # Add null check
+                city_forcast.append(
+                    {
+                        "valid_date": convert_date_format(item.get("valid_date")),
+                        "weekday": convert_date_to_weekday(item.get("valid_date")),
+                        "temp": item.get("temp"),
+                        "min_temp": item.get("min_temp"),
+                        "max_temp": item.get("max_temp"),
+                        "sunrise_ts": convertEpochToTime(item.get("sunrise_ts")),
+                        "sunset_ts": convertEpochToTime(item.get("sunset_ts")),
+                        "weather_desc": item.get("weather").get("description"),
+                        "weather_icon": item.get("weather").get("icon"),
+                    }
+                )
+        app.logger.debug(f"city_forcast results: {city_forcast}")
+        return city_forcast
+
+
+    @app.before_first_request
+    def before_first_request():
+        print("Running before any request")
+        """
+        Executes a database query and stores results in global_data before first request.
+        """
+        try:
+            app.cities = [u.__dict__ for u in Cities.query.all()]
+            list_of_contries = [item.get("country_full") for item in app.cities]
+            app.contries = list(dict.fromkeys(list_of_contries))
+            app.contries.sort()
+            app.cities_only = [item.get("city_name") for item in app.cities]
+            app.cities_only.sort()
+            app.logger.info("Database query executed successfully")
+        except Exception as e:
+            print(f"Error querying database: {e}")
 
 
 @app.route("/get_cities", methods=["GET"])
@@ -221,6 +233,10 @@ def search():
 
 
 @app.route("/get_weather", methods=["POST"])
+    def get_city_forcast(city_obj: Dict[str, str]):
+        # Add your implementation here
+        pass
+
 def get_weather():
     city_id = request.form.get("select_field")
     print(f"request.form = {request.form}")
@@ -229,7 +245,7 @@ def get_weather():
         "city_id": city_id,
         "city_name": city.city_name,
         "state_code": city.state_code,
-        "country_code": city.country_code,
+        "country_code": str(city.country_code),
         "country_full": city.country_full,
         "city_lat": city.city_lat,
         "city_lon": city.city_lon,
