@@ -72,3 +72,4 @@ WTForms==3.1.2
 WTForms-Alchemy==0.18.0
 WTForms-Components==0.10.5
 WTForms-SQLAlchemy==0.4.1
+prometheus_client==0.20.0

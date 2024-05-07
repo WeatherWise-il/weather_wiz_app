@@ -15,7 +15,8 @@ import pytz
 from datetime import datetime
 import pytz
 from typing import Dict
-
+from prometheus_client import Counter, Gauge, Histogram,Summary,generate_latest,CONTENT_TYPE_LATEST
+import time
 
 dictConfig(
     {
@@ -56,6 +57,11 @@ DB_USER_PASSWORD = os.getenv("DB_USER_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 DB_PORT = os.getenv("DB_PORT")
+## define metrics
+REQUEST_COUNT = Counter('request_counter','full requests counter',['method','endpoint','http_status'])
+REQUEST_LATENCY = Histogram('request_latency_seconds','request latency',['method','endpoint'])
+REQUEST_DURATION= Summary('request_duration_seconds','request duration',['method','endpoint'])
+TODOS_TOTAL =  Gauge('total_todo_items','Total number of todo items in the list',['action'])
 
 
 app.logger.debug("List of environment variables:")
@@ -275,6 +281,10 @@ def home():
 def internal_error(error):
     temp_title = "500 Error page"
     return render_template("500.html", title=temp_title), 500
+
+@app.route('/metrics')
+def metrics():
+    return  generate_latest(),200,{'Content-Type': CONTENT_TYPE_LATEST}
 
 
 if __name__ == "__main__":
