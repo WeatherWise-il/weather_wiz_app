@@ -27,6 +27,20 @@ services:
     ports:
       - "3306:3306"
 
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: prometheus_service
+    ports:
+      - "9091:9090"
+    restart: always
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - flask_app
+
+
 secrets:
    app_api_key:
     file: app_api_secret.txt
