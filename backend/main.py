@@ -1,5 +1,5 @@
+import time
 from logging.config import dictConfig
-
 import prometheus_client
 from flask import Flask, render_template, request
 from flask_swagger_ui import get_swaggerui_blueprint
@@ -9,16 +9,14 @@ from flask_wtf import CSRFProtect
 from flask_restful import Api
 from forms import get_weather_form as weather_form
 from flask_sqlalchemy import SQLAlchemy
-import json
 from flask_htmx import HTMX
 import requests
 import datetime
-import pytz
+
 from datetime import datetime
 import pytz
-from typing import Dict
 from prometheus_client import Counter, Gauge, Histogram, Summary, generate_latest, CONTENT_TYPE_LATEST
-import time
+
 
 dictConfig(
     {
@@ -62,7 +60,7 @@ DB_PORT = os.getenv("DB_PORT")
 # Define metrics
 REQUEST_COUNT = Counter('request_counter', 'full requests counter', ['method', 'endpoint', 'http_status'])
 REQUEST_LATENCY = Histogram('request_latency_seconds', 'request latency', ['method', 'endpoint'])
-REQUEST_DURATION = Summary('request_duration_seconds', 'request duration', ['method', 'endpoint'])
+REQUEST_DURATION = Summary('request_duration_seconds', 'request duration')
 
 
 app.logger.debug("List of environment variables:")
@@ -107,9 +105,21 @@ class Cities(db.Model):
         return f"City: {self.city_name}, {self.state_code}, {self.country_code}, {self.country_full}, {self.city_lat}, {self.city_lon}"
 
 
+@app.before_request
+def start_timer():
+    request.start_time = time.time()
+@REQUEST_DURATION.time()
+@app.after_request
+def record_metrics(response):
+    request_latency = time.time() - request.start_time
+    REQUEST_COUNT.labels(request.method, request.path, response.status_code).inc()
+    REQUEST_LATENCY.labels(request.method, request.path).observe(request_latency)
+    return response
+
+
 @app.errorhandler(404)
 def page_not_found(e):
-    REQUEST_COUNT.labels(method='GET', endpoint='/404', http_status=404).inc()
+    # REQUEST_COUNT.labels(method='GET', endpoint='/404', http_status=404).inc()
     temp_title = "404"
     app.logger.error(f"Page not found: {e} request: {request.path}")
     return render_template("404.html", title=temp_title), 404
@@ -206,11 +216,11 @@ def get_cities_by_country():
         ]
         cities_list_of_choices.sort()
         app.logger.debug(f"### cities_list_of_choices = {cities_list_of_choices}")
-        REQUEST_COUNT.labels(method='GET', endpoint='/get_cities', http_status=200).inc()
+        # REQUEST_COUNT.labels(method='GET', endpoint='/get_cities', http_status=200).inc()
         return render_template("cities_options.html", cities=cities_list_of_choices)
     except Exception as e:
         app.logger.error(f"Error querying database: {e}")
-        REQUEST_COUNT.labels(method='GET', endpoint='/get_cities', http_status=500).inc()
+        # REQUEST_COUNT.labels(method='GET', endpoint='/get_cities', http_status=500).inc()
 
 
 @app.route("/search", methods=["GET"])
@@ -252,11 +262,11 @@ def get_weather():
         }
         print(f"city_obj = {city_obj}")
         results = get_city_forcast(city_obj)
-        REQUEST_COUNT.labels(method='POST', endpoint='/get_weather', http_status=200).inc()
+        # REQUEST_COUNT.labels(method='POST', endpoint='/get_weather', http_status=200).inc()
         return render_template("weather_results.html", results=results)
     except Exception as e:
         app.logger.error(f"Error: {e}")
-        REQUEST_COUNT.labels(method='POST', endpoint='/get_weather', http_status=500).inc()
+        # REQUEST_COUNT.labels(method='POST', endpoint='/get_weather', http_status=500).inc()
         return render_template("500.html", title="500 Error page"), 500
 
 
@@ -265,17 +275,17 @@ def home():
     try:
         temp_title = "Weather App"
         form = weather_form()
-        # if form.validate_on_submit():
-        #     print(f"search = {form.search_term.data}")
-        #     print(f"city = {form.select_field.data}")
-        REQUEST_COUNT.labels(method='GET', endpoint='/', http_status=200).inc()
+        if form.validate_on_submit():
+            print(f"search = {form.search_term.data}")
+            print(f"city = {form.select_field.data}")
+        # REQUEST_COUNT.labels(method='GET', endpoint='/', http_status=200).inc()
         return render_template(
                 "index.html",
                 title=temp_title,
                 form=form), 200
     except Exception as e:
         app.logger.error(f"Error: {e}")
-        REQUEST_COUNT.labels(method='GET', endpoint='/', http_status=500).inc()
+        # REQUEST_COUNT.labels(method='GET', endpoint='/', http_status=500).inc()
         return render_template("500.html", title="500 Error page"), 500
 
 
