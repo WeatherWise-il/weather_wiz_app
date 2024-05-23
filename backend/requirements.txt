@@ -13,7 +13,6 @@ cryptography==42.0.5
 decorator==5.1.1
 distlib==0.3.8
 dnspython==2.6.1
-email_validator==2.1.1
 filelock==3.13.1
 Flask==2.2.5
 flask-htmx==0.3.2
@@ -73,3 +72,4 @@ WTForms==3.1.2
 WTForms-Alchemy==0.18.0
 WTForms-Components==0.10.5
 WTForms-SQLAlchemy==0.4.1
+prometheus_client==0.20.0
