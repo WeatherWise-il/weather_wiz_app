@@ -26,21 +26,46 @@ services:
     restart: always
     ports:
       - "3306:3306"
+    expose:
+      - "3306"
 
   prometheus:
     image: prom/prometheus:v2.51.2
-    container_name: prometheus_service
+#    container_name: prometheus
     ports:
       - "9091:9090"
     restart: always
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/promethues/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     depends_on:
-      - flask_app
+      - mysql-exporter
 
+  mysql-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    container_name: mysql-exporter
+    volumes:
+      - ./monitoring/promethues/mysql_exporter/.my.cnf:/cnf/.my.cnf
+    command:
+      - '--config.my-cnf=/cnf/.my.cnf'
+    restart: unless-stopped
+    depends_on:
+      - mysql_db
+    ports:
+      - 9104:9104
 
+  grafana_service:
+    image: grafana/grafana:10.3.6
+#    container_name: grafana_service
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
 secrets:
    app_api_key:
     file: app_api_secret.txt
