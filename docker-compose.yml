@@ -1,40 +1,48 @@
+name: weatherwiz
 services:
 
-  front_end:
+  nginx-frontend:
     build:  ./frontend/
-    container_name: frontend
+    container_name: nginx-frontend
     restart: always
+    networks:
+      - weather-app
+      - monitor-net
     ports:
       - 80:80
     depends_on:
-      - flask_app
+      - flask-backend
 
-  flask_app:
+  flask-backend:
     build: ./backend/
-    container_name: flask_app
+    container_name: flask-backend
     secrets:
       - app_api_key
     ports:
       - "5100:5100"
+    networks:
+      - weather-app
     depends_on:
-      mysql_db:
+      mysql-db:
         condition: service_healthy
 
-  mysql_db:
+  mysql-db:
     build: ./db/
-    container_name: mysql_db
+    container_name: mysql-db
     restart: always
+    networks:
+      - weather-app
     ports:
       - "3306:3306"
 
-<<<<<<< Updated upstream
-=======
   prometheus:
     image: prom/prometheus:v2.51.2
-#    container_name: prometheus
+    container_name: prometheus
     ports:
       - "9091:9090"
     restart: always
+    networks:
+      - monitor-net
     volumes:
       - ./monitoring/promethues/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
@@ -49,19 +57,25 @@ services:
       - ./monitoring/promethues/mysql_exporter/.my.cnf:/cnf/.my.cnf
     command:
       - '--config.my-cnf=/cnf/.my.cnf'
+    networks:
+      - monitor-net
+      - weather-app
     restart: unless-stopped
     depends_on:
-      - mysql_db
+      - mysql-db
     ports:
       - 9104:9104
 
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:1.1.0
+    container_name: nginx-prometheus-exporter
     ports:
       - 9113:9113
+    networks: 
+      - monitor-net
     command: --nginx.scrape-uri=http://frontend:80/status
     depends_on:
-      - front_end
+      - nginx-frontend
 
   grafana:
     image: grafana/grafana:11.0.0
@@ -72,13 +86,20 @@ services:
       - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     restart: unless-stopped
+    networks:
+      - monitor-net
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
     depends_on:
       - prometheus
->>>>>>> Stashed changes
 secrets:
    app_api_key:
     file: app_api_secret.txt
+
+networks:
+  weather-app:
+    driver: bridge
+  monitor-net:
+    driver: bridge
