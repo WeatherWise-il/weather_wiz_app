@@ -161,3 +161,4 @@ cython_debug/
 .idea/
 *secret.txt
 .DS_Store
+.env
