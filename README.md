@@ -30,8 +30,8 @@ To run this project, you will need to add the following environment variables to
 ## Authors
 
 - [@Michael Shechter](https://github.com/MichaelShechter)
-- [@Idan choen](https://github.com/MichaelShechter)
-- [@Or gueta](https://github.com/MichaelShechter)
+- [@Idan Cohen](https://github.com/IdanCohen)
+- [@Or Guetta](https://github.com/orguetta)
 
 
 ## API Reference
