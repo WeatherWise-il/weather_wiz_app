@@ -1,7 +1,8 @@
-FROM python:3.10-slim-bullseye as base
+FROM python:3.10-slim-bullseye AS base
 
 WORKDIR /app
 COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
 
 ENV FLASK_PORT=5100
@@ -9,7 +10,7 @@ ENV FLASK_HOST=0.0.0.0
 ENV CSRF_SECRET_KEY=0wkamvVia0?n$NqIRVWOG
 ENV DB_USERNAME=appuser
 ENV DB_USER_PASSWORD=appuser1
-ENV DB_HOST=mysql_db
+ENV DB_HOST=mysql-db
 ENV DB_NAME=weather_db
 ENV DB_PORT=3306
 

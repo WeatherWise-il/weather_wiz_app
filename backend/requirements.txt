@@ -13,7 +13,6 @@ cryptography==42.0.5
 decorator==5.1.1
 distlib==0.3.8
 dnspython==2.6.1
-email_validator==2.1.1
 filelock==3.13.1
 Flask==2.2.5
 flask-htmx==0.3.2
@@ -50,14 +49,14 @@ pre-commit==1.21.0
 pycparser==2.21
 Pygments==2.17.2
 pymdown-extensions==10.7.1
-PyMySQL==1.1.0
+PyMySQL==1.1.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
 PyYAML==6.0.1
 pyyaml_env_tag==0.1
 ratelim==0.1.6
-requests==2.31.0
+requests==2.32.0
 ruff==0.3.3
 six==1.16.0
 SQLAlchemy==2.0.28
@@ -73,3 +72,4 @@ WTForms==3.1.2
 WTForms-Alchemy==0.18.0
 WTForms-Components==0.10.5
 WTForms-SQLAlchemy==0.4.1
+prometheus_client==0.20.0

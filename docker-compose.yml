@@ -1,23 +1,133 @@
-version: '3'
+name: weatherwiz
 services:
-  flask_app:
+
+  nginx-frontend:
+    build:  ./frontend/
+    container_name: nginx-frontend
+    restart: always
+    networks:
+      - weather-app
+      - monitor-net
+    ports:
+      - 80:80
+    depends_on:
+      - flask-backend
+
+  flask-backend:
     build: ./backend/
-    container_name: flask_app
+    container_name: flask-backend
     secrets:
       - app_api_key
-    ports:
-      - "5100:5100"
+    networks:
+      - weather-app
+      - monitor-net
     depends_on:
-      mysql_db:
-        condition: service_healthy    
+      mysql-db:
+        condition: service_healthy
 
-  mysql_db:
+  mysql-db:
     build: ./db/
-    container_name: mysql_db
+    container_name: mysql-db
     restart: always
+    networks:
+      - weather-app
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--log.level=warn'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    expose:
+      - 9090:9090
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    container_name: mysql-exporter
+    volumes:
+      - ./monitoring/prometheus/mysql_exporter/.my.cnf:/cnf/.my.cnf
+    command:
+      - '--config.my-cnf=/cnf/.my.cnf'
+      - '--mysqld.address=mysql-db:3306'
+    networks:
+      - monitor-net
+      - weather-app
+    restart: unless-stopped
+    depends_on:
+      - mysql-db
+
+  nginx-prometheus-exporter:
+    image: nginx/nginx-prometheus-exporter:1.1.0
+    container_name: nginx-prometheus-exporter
+    networks: 
+      - monitor-net
+    command: --nginx.scrape-uri=http://nginx-frontend:80/status
+    depends_on:
+      - nginx-frontend
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: grafana
     ports:
-      - "3306:3306"
+      - 3000:3000
+    volumes:
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    restart: unless-stopped
+    networks:
+      - monitor-net
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=warning
+    depends_on:
+      - prometheus
+
+  nodeexporter:
+    image: prom/node-exporter:v1.8.0
+    container_name: nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+    expose:
+      - 9100
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
 
 secrets:
    app_api_key:
     file: app_api_secret.txt
+
+networks:
+  weather-app:
+    driver: bridge
+  monitor-net:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana_data:
