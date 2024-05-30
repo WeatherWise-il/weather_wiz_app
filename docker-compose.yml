@@ -18,10 +18,9 @@ services:
     container_name: flask-backend
     secrets:
       - app_api_key
-    ports:
-      - "5100:5100"
     networks:
       - weather-app
+      - monitor-net
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -32,48 +31,51 @@ services:
     restart: always
     networks:
       - weather-app
-    ports:
-      - "3306:3306"
 
   prometheus:
-    image: prom/prometheus:v2.51.2
+    image: prom/prometheus:v2.52.0
     container_name: prometheus
-    ports:
-      - "9091:9090"
-    restart: always
-    networks:
-      - monitor-net
     volumes:
-      - ./monitoring/promethues/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus:/etc/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    depends_on:
-      - mysql-exporter
+      - '--log.level=warn'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    expose:
+      - 9090:9090
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
 
   mysql-exporter:
     image: prom/mysqld-exporter:v0.15.1
     container_name: mysql-exporter
     volumes:
-      - ./monitoring/promethues/mysql_exporter/.my.cnf:/cnf/.my.cnf
+      - ./monitoring/prometheus/mysql_exporter/.my.cnf:/cnf/.my.cnf
     command:
       - '--config.my-cnf=/cnf/.my.cnf'
+      - '--mysqld.address=mysql-db:3306'
     networks:
       - monitor-net
       - weather-app
     restart: unless-stopped
     depends_on:
       - mysql-db
-    ports:
-      - 9104:9104
 
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:1.1.0
     container_name: nginx-prometheus-exporter
-    ports:
-      - 9113:9113
     networks: 
       - monitor-net
-    command: --nginx.scrape-uri=http://frontend:80/status
+    command: --nginx.scrape-uri=http://nginx-frontend:80/status
     depends_on:
       - nginx-frontend
 
@@ -92,6 +94,7 @@ services:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=warning
     depends_on:
       - prometheus
 secrets:
