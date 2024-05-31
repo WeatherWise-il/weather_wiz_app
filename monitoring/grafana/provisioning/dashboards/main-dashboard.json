@@ -1939,7 +1939,8 @@
   "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
   "timezone": "browser",
-  "title": "WeatherWiz Dashboard",
+  "title": "Main Dashboard",
+  "description": "A dashboard of WeatherWiz Stack",
   "uid": "bdn9jbkhryy2oc",
   "version": 5,
   "weekStart": ""
