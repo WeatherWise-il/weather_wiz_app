@@ -25,6 +25,10 @@ IGNORE 1 LINES
 
 
 GRANT SELECT  ON weather_db.* TO 'appuser'@'%';
+
+CREATE USER 'exporter'@'%' IDENTIFIED WITH mysql_native_password BY 'exporter_password' WITH MAX_USER_CONNECTIONS 3;
+GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%';
+
 FLUSH PRIVILEGES;
 
 
