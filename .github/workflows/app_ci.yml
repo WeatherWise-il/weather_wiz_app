@@ -32,8 +32,9 @@ jobs:
 
       - name: Tests
         run: |
-          # Add your test commands here
-          curl -f http://localhost:80 || exit 1 
+          # provide execute permission to the script
+          chmod +x ./tests/test.bash
+          ./tests/test.bash
           
 # - name: Login to DockerHub
       #   uses: docker/login-action@v3
