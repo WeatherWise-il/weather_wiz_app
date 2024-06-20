@@ -10,7 +10,6 @@ check_status_code() {
     local actual_status
 
     actual_status=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$endpoint")
-    echo "actual_status: ${actual_status}"
     if [ "$actual_status" -eq "$expected_status" ]; then
         echo "PASS: $endpoint returned status code $actual_status"
     else
@@ -37,7 +36,7 @@ check_response_content() {
 # Test cases
 
 echo "Runnig test case #1 - checking Backend availability"
-check_status_code "/" 200
+echo $(check_status_code "/" 200)
 
 
 
