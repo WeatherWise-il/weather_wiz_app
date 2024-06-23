@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+<head>
+    {{"decoupled-map"|googlemap_js(37.4419, -122.1419, markers=[(37.4419,
+    -122.1419)])}} {{mymap.js}} 
+  </head>
+{% block contents %}
+<script src="https://unpkg.com/htmx.org@1.9.2"></script>
+
+
+
+<div class="container mt-5">
+  <div class="row" >
+    <div class="col-6 m-auto">
+      <div class="card m-auto" style="width:400px;">
+        <div class="card-body m-auto" >
+          <h5 class="card-title m-2" >Let's see what is the weather in...</h5>
+          <form method="POST"  class="form-inline" >
+            {{ form.csrf_token }}
+            <div class="form-floating">
+              {{ form.search_term(class="form-control m-2",type="text", placeholder="Search for a city", id="search_term" )}}  
+              {{form.search_term.label(class="form-label")}}
+            </div>
+            <div class="form-floating">
+             {{ form.select_field(class="form-control m-2", type="text", placeholder="City") }}
+              {{form.select_field.label(class="form-label",placeholder="City" ) }}  
+            </div>
+            <button type="submit" class="btn btn-outline-success m-2 " id="search_bt" hx-post="{{ url_for('get_weather') }}" hx-target="#weather_results" hx-swap="innerHTML">Submit</button>
+          </form>
+        </div>
+      </div>  
+    </div>
+  </div>
+</div>
+
+
+<div>
+  <button type="submit" id="clear-results-button" class="btn btn-outline-danger m-2 " >Clear results</button>
+
+</div>
+<div class="container mt-5">
+  <div id="weather_results"  class="row">
+    
+  </div>
+</div>
+<script src="{{url_for('static', filename='js/index.js')}}"></script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% for result in results %}
+    <!-- Day forcast-->
+    <div class="card col-lg daily_weather_results m-2 border-dark" style="width:300px;">
+        <div class=" text-center d-flex align-items-center">
+            <div class="card-body text-dark">
+                <h5 class="card-title ">{{result.valid_date}}</h5>
+                <h5 class="card-title ">{{result.weekday}}</h5>
+                <p>{{result.weather_description}}</p>
+                <img  src="static/icons/{{result.weather_icon}}.png" class="img-thumbnail img-responsive" alt="weather_icon" > 
+                <p>Temp: {{result.temp}}</p>
+                <p>Min Temp: {{result.min_temp}}</p>   
+                <p>Max Temp: {{result.max_temp}}</p>   
+                <p>Sunrise: {{result.sunrise_ts}}</p>   
+                <p>Sunset: {{result.sunset_ts}}</p> 
+            </div>
+        </div>
+    </div>
+{% endfor %}  
