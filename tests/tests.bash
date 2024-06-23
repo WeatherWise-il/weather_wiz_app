@@ -9,6 +9,7 @@ check_status_code() {
     local expected_status=$2
     local actual_status
 
+    echo "$BASE_URL$endpoint"
     actual_status=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$endpoint")
     if [ "$actual_status" -eq "$expected_status" ]; then
         echo "PASS: $endpoint returned status code $actual_status"
@@ -23,7 +24,8 @@ check_response_content() {
     local expected_content=$2
     local actual_content
 
-    actual_content=$(curl -s "$BASE_URL$endpoint")
+    
+    echo "$BASE_URL$endpoint"
     if echo "$actual_content" | grep -q "$expected_content"; then
         echo "PASS: $endpoint returned expected content"
     else
@@ -35,18 +37,13 @@ check_response_content() {
 
 # Test cases
 
-echo "Runnig test case #1 - checking Backend availability"
+echo "Runnig test case #1 - App UI availability"
 echo $(check_status_code "/" 200)
 
 
-
-
-
-# check_response_content "/" "Welcome to the Flask app!"
-
-# check_status_code "/api/resource" 200
-# check_response_content "/api/resource" '{"key":"value"}'
-
-# check_status_code "/nonexistent" 404
-
-# Add more tests as needed
+echo  "Running test case #2 - Calling GET request to  city_weather endpoint"
+cities=("Paris" "New York City" "Tel aviv ")
+for city in "${cities[@]}"; do
+    encoded_city=$(echo "$city" | jq -sRr @uri)
+    echo $(check_status_code "/city_weather?city=$encoded_city" 200)
+done
