@@ -47,3 +47,6 @@ for city in "${cities[@]}"; do
     encoded_city=$(echo "$city" | jq -sRr @uri)
     echo $(check_status_code "/city_weather?city=$encoded_city" 200)
 done
+
+echo  "Running test case #3 - Checking Nginx container is in status Running"
+res=$(docker inspect --format '{{json .State.Running}}' nginx-frontend)

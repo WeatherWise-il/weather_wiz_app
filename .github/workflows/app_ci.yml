@@ -3,16 +3,12 @@ name: CI workflow
 on:
   workflow_dispatch:
   push:
-    branches:
-      - ci_flow
-  pull_request:
-    branches:
-      - main
+    branches: ["ci_flow",  "main", "feature*"] 
+
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,26 +19,36 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::183067302538:role/gitbub_action_role
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR Private
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Set up Docker Compose
         run: |
+          echo "Running Docker Compose"
           docker compose up -d 
+          ehco "Docker Compose up and running"
 
+      - name: Getting list of images in the system
+        run: |
+          echo "List of images in the system"
+          docker images
+            
+        
       - name: Tests
         run: |
           # provide execute permission to the script
           chmod +x ./tests/tests.bash
           ./tests/tests.bash
 
-# - name: Login to DockerHub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKER_USERNAME }}
-      #     password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # - name: Build and push
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     context: .
-      #     push: true
-      #     tags: ${{ secrets.DOCKER_USERNAME }}/your-app:latest          
+      # - name: push image to ECR
+      #   run: |
+      #     docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/weather_app:latest .
+      #     docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/weather_app:latest
