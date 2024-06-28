@@ -14,9 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Write Weather API TOKEN  to file
-        run: echo "${{ secrets.WEATHER_APP_API_TOKEN }}" > app_api_secret.txt
-        shell: bash    
+      # - name: Write Weather API TOKEN  to file
+      #   run: echo "${{ secrets.WEATHER_APP_API_TOKEN }}" > app_api_secret.txt
+      #   shell: bash    
 
       - name: list files in the dicrectory
         run: ls -la
@@ -62,4 +62,5 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: WeatherWise-il/infra
+          token: ${{ secrets.WEATHER_GITHUB_TOKEN }}
           ref: main
