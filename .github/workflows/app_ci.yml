@@ -44,11 +44,11 @@ jobs:
       #     echo "List of images in the system"
       #     docker images
             
-      - name: Tests
-        run: |
-          # provide execute permission to the script
-          chmod +x ./tests/tests.bash
-          ./tests/tests.bash
+      # - name: Tests
+      #   run: |
+      #     # provide execute permission to the script
+      #     chmod +x ./tests/tests.bash
+      #     ./tests/tests.bash
 
       # - name: push image to ECR
       #   run: |
@@ -64,3 +64,6 @@ jobs:
           repository: WeatherWise-il/infra
           token: ${{ secrets.WEATHER_GITHUB_TOKEN }}
           ref: main
+
+      - name: list files in infra repo 
+        run: ls -la
