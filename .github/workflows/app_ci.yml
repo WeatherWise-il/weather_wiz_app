@@ -7,6 +7,11 @@ on:
   # schedule:
   # - cron: "0 1 * * *"
 
+permissions: 
+  id-token: write
+  contents: read
+
+
 jobs:
   build:
     needs: infra
@@ -23,17 +28,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # TODO: fix AWS credentials step
-      # - name: Configure AWS credentials
-        # uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     role-to-assume: arn:aws:iam::183067302538:role/gitbub_action_role
-      #     aws-region: us-east-1
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::183067302538:role/GitHub_OIDC_ECR
+          role-session-name: ElasticContainerRegistry
+          aws-region: us-east-1
 
-      # - name: Login to Amazon ECR Private
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v2
-
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        
       - name: Set up Docker Compose
         run: |
           echo "Running Docker Compose"
@@ -41,16 +47,25 @@ jobs:
           ehco "Docker Compose up and running"
         shell: bash  
 
-      # - name: Getting list of images in the system
-      #   run: |
-      #     echo "List of images in the system"
-      #     docker images
+      - name: Getting a list of images in the system
+        run: |
+          echo "List of images in the system"
+          docker images
             
       - name: Tests
         run: |
-      #     # provide execute permission to the script
-      #     chmod +x ./tests/tests.bash
-      #     ./tests/tests.bash
+          # provide execute permission to the script
+          chmod +x ./tests/tests.bash
+          ./tests/tests.bash
+
+
+      - name: push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: weather_wiz_app_repo
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker compose push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       # - name: push image to ECR
       #   run: |
