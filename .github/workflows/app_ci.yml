@@ -44,7 +44,7 @@ jobs:
         run: |
           echo "Running Docker Compose"
           docker compose up -d 
-          ehco "Docker Compose up and running"
+          echo "Docker Compose up and running"
         shell: bash  
 
       - name: Getting a list of images in the system
