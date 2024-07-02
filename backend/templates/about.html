@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block contents %}
+<script src="https://unpkg.com/htmx.org@1.9.2"></script>
+
+<div class="container mt-5">
+  <div class="row" >
+    <h1>About us</h1>
+</div>
+<div class="container mt-5">
+  <div class="row">
+    <!-- card -->
+      <div class="col-4">
+        <div class="card h-100" >
+            <img src="{{ url_for('static', filename='images/about_us/idan.jpeg') }}" class="card-img-top mx-auto   rounded-circle" alt="Idan">
+            <div class="card-body" >
+              <h5 class="card-title text-center">Idan Choen</h5>
+              <p class="card-text">Experienced manager and tech leader with a demonstrated history of working in the information security industry. 
+                Highly skilled in reverse engineering, DevSecOps, cloud security, next-generation firewalls, WAFs, ADCs (Citrix NetScaler, F5 BIG-IP), containerized environments (Kubernetes, Docker), and more.
+                Led many projects in complex enterprise infrastructure (IT and Networking). 
+                Certified CISO & DPO by Bar-Ilan University (CISSP, CISM certifications).
+                Certified Information Security Expert by the Technion - Israel Institute of Technology (MCSE, CCNE certifications).
+              </p>
+              <div>
+                <a href="https://www.linkedin.com/in/idan-cohen-/" target="_blank" class="btn btn-primary">Linkedin</a>
+              </div>
+            </div>
+        </div>
+      </div>     
+    <!-- card -->
+    <div class="col-4">
+      <div class="card h-100">
+        <img src="{{ url_for('static', filename='images/about_us/michael.jpeg') }}" class="card-img-top mx-auto rounded-circle" alt="Michael" >
+        <div class="card-body">
+          <h5 class="card-title text-center" >Michael Shechter</h5>
+          <p class="card-text">Certified Jira server administrator. More than 5 years of experience. Developing Jira automation using Groovy/Java.
+            Working with EazyBi, Structure, Adaptavist Script runner, and X-ray.
+            Passion to learn new skills.
+            “Once you stop learning you start dying”
+            Albert Einstein 
+          </p>
+          <div>
+            <a href="https://github.com/MichaelShechter" target="_blank" class="btn btn-dark">GitHub</a>
+            <a href="https://linkedin.com/in/shechterm" target="_blank" class="btn btn-primary">Linkedin</a>
+          </div>
+        </div>
+      </div>   
+    </div>
+    
+    <!-- card -->
+    <div class="col-4">
+      <div class="card h-100">
+        <img src="{{ url_for('static', filename='images/about_us/or.jpeg') }}" class="card-img-top mx-auto rounded-circle" alt="or" >
+        <div class="card-body" >
+          <h5 class="card-title text-center" >Or guetta</h5>
+          <p class="card-text">I started my connection to the world of computers at a young age
+            From there I studied at the School of Computer Science and in the Israeli Air Force I served as a technician for computer networks and systems
+            From there I started working at EDP as a cloud administrator
+            And at Altshuler Shaham, I worked as a Microsoft Administrator and specialized in PKI and MDM, and IAM
+            I worked in securenet from the AMAN Group as an integrator of information security systems
+            And currently, I work in Integrity software as Senior cybersecurity eng.</p>
+            <div>
+              <a href="https://github.com/orguetta" target="_blank" class="btn btn-dark">GitHub</a>
+              <a href="https://www.linkedin.com/in/orguetta/" target="_blank" class="btn btn-primary">Linkedin</a>
+            </div>
+        </div>
+      </div>   
+    </div>
+  </div>
+</div>
+{% endblock %}
+

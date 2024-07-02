@@ -318,6 +318,19 @@ def home():
 
 
 
+@app.route("/about", methods=["GET"])
+def about():
+    try:
+        title = "About page"
+        # css= True
+        css = 'styles/about.css'
+        return render_template(
+                    "about.html",
+                    title=title, css= css), 200
+    except Exception as e:
+        app.logger.error(f"Error: {e}")
+        return render_template("500.html", title="500 Error page"), 500
+    
 @app.errorhandler(500)
 def internal_error(error):
     temp_title = "500 Error page"
