@@ -110,7 +110,7 @@ services:
   grafana:
     build: ./monitoring/grafana/
     
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$${{secrets.AWS_REGION}.amazonaws.com/weather_wiz_app_grafana:latest
+    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_grafana:latest
     container_name: grafana
     ports:
       - 3000:3000
@@ -135,7 +135,7 @@ services:
     environment:
       - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
       - AWS_REGION=$AWS_REGION
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$${{secrets.AWS_REGION}.amazonaws.com/weather_wiz_app_node_exporter:latest
+    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_node_exporter:latest
     container_name: nodeexporter
     volumes:
       - /proc:/host/proc:ro
