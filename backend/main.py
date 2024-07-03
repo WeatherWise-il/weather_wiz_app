@@ -251,6 +251,17 @@ def get_cities_by_country():
         # REQUEST_COUNT.labels(method='GET', endpoint='/get_cities', http_status=500).inc()
 
 
+@app.route("/get_city", methods=["GET"])
+def get_city():
+    try:
+        REQUEST_COUNT.labels(method='GET', endpoint='/get_city', http_status=200).inc()
+        app.logger.info("Calling /get_city REST endpoint")
+        return jsonify({"cities list":app.cities_only}), 200
+    except Exception as e:
+        app.logger.error(f"Error calling to /get_city REST endpoint: {e}")
+        return jsonify({'error': 'Bad request'}), 400
+        
+
 @app.route("/search", methods=["GET"])
 def search():
     search_term = request.args.get("search_term")
