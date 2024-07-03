@@ -40,11 +40,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         
-      - name: Set up Docker Compose
+      - name: Build and running Docker Compose
         run: |
           echo "Running Docker Compose"
+          docker build --no-cache
           docker compose up -d 
-          echo "Docker Compose up and running"
         shell: bash  
 
       - name: Getting a list of images in the system
@@ -58,14 +58,17 @@ jobs:
           chmod +x ./tests/tests.bash
           ./tests/tests.bash
 
+      - name: Push Docker image to Amazon ECR
+        run:
+          docker compose push
 
-      - name: push docker image to Amazon ECR
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: weather_wiz_app_repo
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker compose push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      # - name: push docker image to Amazon ECR
+      #   env:
+      #     REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     REPOSITORY: weather_wiz_app_repo_backend
+      #     IMAGE_TAG: ${{ github.sha }}
+      #   run: |
+      #     docker compose push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       # - name: push image to ECR
       #   run: |
