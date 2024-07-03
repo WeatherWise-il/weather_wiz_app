@@ -4,7 +4,7 @@ services:
   nginx-frontend:
     build:  ./frontend/
     # image: 183067302538.dkr.ecr.us-east-1.amazonaws.com/weather_wiz_app_frontend:latest
-    image: $${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.$${{secrets.AWS_REGION}}.amazonaws.com/weather_wiz_app_frontend:latest
+    image: $${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.$${{vars.AWS_REGION}}.amazonaws.com/weather_wiz_app_frontend:latest
     container_name: nginx-frontend
     restart: always
     networks:
@@ -18,8 +18,8 @@ services:
   flask-backend:
     build: ./backend
     container_name: flask-backend
-    # image: "$${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.$${{secrets.AWS_REGION}}.amazonaws.com/weather_wiz_app_backend:latest"
-    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{secrets.AWS_REGION}}.amazonaws.com/weather_wiz_app_backend:latest
+    # image: "$${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.$${{vars.AWS_REGION}}.amazonaws.com/weather_wiz_app_backend:latest"
+    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{vars.AWS_REGION}}.amazonaws.com/weather_wiz_app_backend:latest
     secrets:
       - app_api_key
     volumes:
@@ -33,7 +33,7 @@ services:
 
   mysql-db:
     build: ./db/
-    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{secrets.AWS_REGION}}.amazonaws.com/weather_wiz_app_db:latest
+    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{vars.AWS_REGION}}.amazonaws.com/weather_wiz_app_db:latest
     container_name: mysql-db
     restart: always
     networks:
@@ -42,7 +42,7 @@ services:
   prometheus:
     build: ./monitoring/promethues/
     # image: prom/prometheus:v2.52.0
-    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{secrets.AWS_REGION}}.amazonaws.com/weather_wiz_app_prometheus:latest
+    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{vars.AWS_REGION}}.amazonaws.com/weather_wiz_app_prometheus:latest
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -65,7 +65,7 @@ services:
 
   mysql-exporter:
     build: ./monitoring/promethues/mysql_exporter/
-    image: $${{secrets.AWS_ACCOUNT_ID}.ecr.$${{secrets.AWS_REGION}}.amazonaws.com/weather_wiz_app_mysql_exporter:latest
+    image: $${{secrets.AWS_ACCOUNT_ID}.ecr.$${{vars.AWS_REGION}}.amazonaws.com/weather_wiz_app_mysql_exporter:latest
     container_name: mysql-exporter
     volumes:
       - ./monitoring/prometheus/mysql_exporter/.my.cnf:/cnf/.my.cnf
@@ -81,7 +81,7 @@ services:
 
   nginx-prometheus-exporter:
     build: ./monitoring/promethues/nginx_exporter/
-    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{secrets.AWS_REGION}}.amazonaws.com/weather_wiz_app_nginx_exporter:latest
+    image: $${{secrets.AWS_ACCOUNT_ID}.dkr.ecr.$${{vars.AWS_REGION}}.amazonaws.com/weather_wiz_app_nginx_exporter:latest
     container_name: nginx-prometheus-exporter
     networks:
       - monitor-net
