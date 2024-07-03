@@ -11,6 +11,10 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
 
 jobs:
   build:
