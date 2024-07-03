@@ -26,7 +26,10 @@ jobs:
 
       - name: Write Weather API TOKEN  to file
         run: echo "${{ secrets.WEATHER_APP_API_TOKEN }}" > app_api_secret.txt
-        shell: bash    
+        shell: bash
+
+      - name: print env variables
+        run: echo "${AWS_REGION}"
 
       
       # - name: Set up Docker Buildx
