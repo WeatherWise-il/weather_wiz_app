@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    needs: infra
+    # needs: infra
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -75,15 +75,15 @@ jobs:
       #     docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/weather_app:latest .
       #     docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/weather_app:latest
 
-  infra:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout tools repo
-        uses: actions/checkout@v4
-        with:
-          repository: WeatherWise-il/infra
-          token: ${{ secrets.WEATHER_GITHUB_TOKEN }}
-          ref: main
+  # infra:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout tools repo
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: WeatherWise-il/infra
+  #         token: ${{ secrets.WEATHER_GITHUB_TOKEN }}
+  #         ref: main
 
       - name: list files in infra repo 
         run: ls -la
