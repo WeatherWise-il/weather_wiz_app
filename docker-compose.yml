@@ -4,10 +4,8 @@ services:
   nginx-frontend:
     build:  ./frontend/
     environment:
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
-    # image: 183067302538.dkr.ecr.us-east-1.amazonaws.com/weather_wiz_app_frontend:latest
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_frontend:latest
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_frontend:latest
     container_name: nginx-frontend
     restart: always
     networks:
@@ -22,10 +20,8 @@ services:
     build: ./backend
     container_name: flask-backend
     environment:
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
-    # image: "$AWS_ACCOUNT_ID}.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_backend:latest"
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_backend:latest
+       - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_backend:latest
     secrets:
       - app_api_key
     volumes:
@@ -40,9 +36,8 @@ services:
   mysql-db:
     build: ./db/
     environment:
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_db:latest
+       - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_db:latest
     container_name: mysql-db
     restart: always
     networks:
@@ -51,10 +46,8 @@ services:
   prometheus:
     build: ./monitoring/promethues/
     environment:
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
-    # image: prom/prometheus:v2.52.0
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_prometheus:latest
+       - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_prometheus:latest
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -78,9 +71,8 @@ services:
   mysql-exporter:
     build: ./monitoring/promethues/mysql_exporter/
     environment:
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
-    image: $AWS_ACCOUNT_ID.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_mysql_exporter:latest
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_mysql_exporter:latest
     container_name: mysql-exporter
     volumes:
       - ./monitoring/prometheus/mysql_exporter/.my.cnf:/cnf/.my.cnf
@@ -97,9 +89,8 @@ services:
   nginx-prometheus-exporter:
     build: ./monitoring/promethues/nginx_exporter/
     environment:
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_nginx_exporter:latest
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_nginx_exporter:latest
     container_name: nginx-prometheus-exporter
     networks:
       - monitor-net
@@ -109,8 +100,13 @@ services:
 
   grafana:
     build: ./monitoring/grafana/
-    
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=warning
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_grafana:latest
     container_name: grafana
     ports:
       - 3000:3000
@@ -120,22 +116,14 @@ services:
     restart: unless-stopped
     networks:
       - monitor-net
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_LOG_LEVEL=warning
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
     depends_on:
       - prometheus
 
   nodeexporter:
     build: ./monitoring/promethues/node_exporter/
     environment:
-      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-      - AWS_REGION=$AWS_REGION
-    image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/weather_wiz_app_node_exporter:latest
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_node_exporter:latest
     container_name: nodeexporter
     volumes:
       - /proc:/host/proc:ro
