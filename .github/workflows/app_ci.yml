@@ -1,0 +1,104 @@
+name: Weather wiz CI/CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["ci_flow",  "main", "feature*"] 
+  # schedule:
+  # - cron: "0 1 * * *"
+
+permissions: 
+  id-token: write
+  contents: read
+
+# env:
+#   AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+#   AWS_REGION: ${{ vars.AWS_REGION }}
+
+
+jobs:
+  build:
+    # needs: infra
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Write Weather API TOKEN  to file
+        run: echo "${{ secrets.WEATHER_APP_API_TOKEN }}" > app_api_secret.txt
+        shell: bash
+
+      - name: print env variables
+        run: echo "${AWS_REGION}"
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::183067302538:role/GitHub_OIDC_ECR
+          role-session-name: ElasticContainerRegistry
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        
+        
+      - name: Checking the ERC values
+        run: |
+          echo ${{ steps.login-ecr.outputs.registry }}
+
+   
+      - name: Build and running Docker Compose
+        env:
+          AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
+          
+        run: |
+          echo "Running Docker Compose"
+          echo "AWS_REPO: $AWS_REPO"
+          docker compose  build --no-cache
+          docker compose up -d 
+        shell: bash  
+
+      - name: Getting a list of images in the system
+        run: |
+          echo "List of images in the system"
+          docker images
+            
+      # - name: Tests
+      #   run: |
+      #     # provide execute permission to the script
+      #     chmod +x ./tests/tests.bash
+      #     ./tests/tests.bash
+
+      - name: Push Docker image to Amazon ECR
+        env:
+          AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
+        run:
+          docker compose push
+
+      # - name: push docker image to Amazon ECR
+      #   env:
+      #     REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     REPOSITORY: weather_wiz_app_repo_backend
+      #     IMAGE_TAG: ${{ github.sha }}
+      #   run: |
+      #     docker compose push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      # - name: push image to ECR
+      #   run: |
+      #     docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/weather_app:latest .
+      #     docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/weather_app:latest
+
+  # infra:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout tools repo
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: WeatherWise-il/infra
+  #         token: ${{ secrets.WEATHER_GITHUB_TOKEN }}
+  #         ref: main
+
+      # - name: list files in infra repo 
+      #   run: ls -la
+      

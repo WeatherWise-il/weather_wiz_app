@@ -1,7 +1,7 @@
 import time
 from logging.config import dictConfig
 import prometheus_client
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from flask_swagger_ui import get_swaggerui_blueprint
 import os
 from flask_bootstrap import Bootstrap5
@@ -12,6 +12,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_htmx import HTMX
 import requests
 import datetime
+
 
 from datetime import datetime
 import pytz
@@ -125,10 +126,37 @@ def page_not_found(e):
     return render_template("404.html", title=temp_title), 404
 
 
-# @app.get("/weather")
-# def get_weather_backend():
-#     REQUEST_COUNT.labels(method='GET', endpoint='/weather', http_status=200).inc()
-#     return json.dumps({"results": "contries_res"}), 200
+@app.get("/city_weather")
+def get_weather_backend():
+    REQUEST_COUNT.labels(method='GET', endpoint='/weather', http_status=200).inc()
+    app.logger.info(f"Calling get weather REST endpoint | request: {request.args}")
+    city_name_query_param = request.args.get('city').strip().title()
+    if not city_name_query_param:
+        return jsonify({'error': 'Missing or empty query parameter:city=<CITY_NAME>'}), 400
+    # app.logger.info(f"city_name_query_param = {city_name_query_param}")
+    # app.logger.info(f"app.cities_only = {app.cities_only}")
+    if city_name_query_param not in app.cities_only:
+        return jsonify({
+        'Error': f'The requested city: {city_name_query_param} is not available',
+        'available cities': app.cities_only
+        }),400
+    else:    
+        if city_name_query_param in  app.cities_only:
+            city_data = Cities.query.filter_by(city_name=city_name_query_param).first()
+            city_obj = {
+                "city_id": city_data.city_id,
+                "city_name": city_data.city_name,
+                "state_code": city_data.state_code,
+                "country_code": str(city_data.country_code),
+                "country_full": city_data.country_full,
+                "city_lat": city_data.city_lat,
+                "city_lon": city_data.city_lon,
+            }
+            results = get_city_forcast(city_obj)
+            return jsonify(results), 200
+        
+    
+    
 
 
 def convert_epoch_to_time(epoch):
@@ -223,6 +251,17 @@ def get_cities_by_country():
         # REQUEST_COUNT.labels(method='GET', endpoint='/get_cities', http_status=500).inc()
 
 
+@app.route("/get_city", methods=["GET"])
+def get_city():
+    try:
+        REQUEST_COUNT.labels(method='GET', endpoint='/get_city', http_status=200).inc()
+        app.logger.info("Calling /get_city REST endpoint")
+        return jsonify({"cities list":app.cities_only}), 200
+    except Exception as e:
+        app.logger.error(f"Error calling to /get_city REST endpoint: {e}")
+        return jsonify({'error': 'Bad request'}), 400
+        
+
 @app.route("/search", methods=["GET"])
 def search():
     search_term = request.args.get("search_term")
@@ -290,6 +329,19 @@ def home():
 
 
 
+@app.route("/about", methods=["GET"])
+def about():
+    try:
+        title = "About page"
+        # css= True
+        css = 'styles/about.css'
+        return render_template(
+                    "about.html",
+                    title=title, css= css), 200
+    except Exception as e:
+        app.logger.error(f"Error: {e}")
+        return render_template("500.html", title="500 Error page"), 500
+    
 @app.errorhandler(500)
 def internal_error(error):
     temp_title = "500 Error page"

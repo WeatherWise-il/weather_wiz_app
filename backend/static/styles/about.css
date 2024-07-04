@@ -1,0 +1,39 @@
+.card-img-top {
+  height: 200px;
+  width: 150px;
+  margin-top: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border: 5px solid #fff;
+}
+
+.card {
+  padding: 1.5em 0.5em 0.5em;
+  text-align: center;
+  border-radius: 2em;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  /* height: auto; */
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+/* 
+.card-img-top {
+  width: auto;
+  border-radius: 50%;
+  margin: 0 auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border: 5px solid #fff;
+   height: ; 
+}
+.card {
+  padding: 1.5em 0.5em 0.5em;
+  text-align: center;
+  border-radius: 2em;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+
