@@ -1,0 +1,158 @@
+name: weatherwiz
+services:
+
+  nginx-frontend:
+    build:  ./frontend/
+    environment:
+      - AWS_REPO=183067302538.dkr.ecr.us-east-1.amazonaws.com
+    # image: $AWS_REPO/weather_wiz_app_frontend:latest
+    container_name: nginx-frontend
+    restart: always
+    networks:
+      - weather-app
+      - monitor-net
+    ports:
+      - 80:80
+    depends_on:
+      - flask-backend
+
+  flask-backend:
+    build: ./backend
+    container_name: flask-backend
+    environment:
+       - AWS_REPO=$AWS_REPO
+    # image: $AWS_REPO/weather_wiz_app_backend:latest
+    secrets:
+      - app_api_key
+    volumes:
+      - ./backend:/app  
+    networks:
+      - weather-app
+      - monitor-net
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+  mysql-db:
+    build: ./db/
+    environment:
+       - AWS_REPO=$AWS_REPO
+    # image: $AWS_REPO/weather_wiz_app_db:latest
+    container_name: mysql-db
+    restart: always
+    networks:
+      - weather-app
+
+  prometheus:
+    build: ./monitoring/promethues/
+    environment:
+       - AWS_REPO=$AWS_REPO
+    # image: $AWS_REPO/weather_wiz_app_prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--log.level=warn'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    expose:
+      - 9090:9090
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  mysql-exporter:
+    build: ./monitoring/promethues/mysql_exporter/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    # image: $AWS_REPO/weather_wiz_app_mysql_exporter:latest
+    container_name: mysql-exporter
+    volumes:
+      - ./monitoring/prometheus/mysql_exporter/.my.cnf:/cnf/.my.cnf
+    command:
+      - '--config.my-cnf=/cnf/.my.cnf'
+      - '--mysqld.address=mysql-db:3306'
+    networks:
+      - monitor-net
+      - weather-app
+    restart: unless-stopped
+    depends_on:
+      - mysql-db
+
+  nginx-prometheus-exporter:
+    build: ./monitoring/promethues/nginx_exporter/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    # image: $AWS_REPO/weather_wiz_app_nginx_exporter:latest
+    container_name: nginx-prometheus-exporter
+    networks:
+      - monitor-net
+    command: --nginx.scrape-uri=http://nginx-frontend:80/status
+    depends_on:
+      - nginx-frontend
+
+  grafana:
+    build: ./monitoring/grafana/
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=warning
+      - AWS_REPO=$AWS_REPO
+    # image: $AWS_REPO/weather_wiz_app_grafana:latest
+    container_name: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    restart: unless-stopped
+    networks:
+      - monitor-net
+    depends_on:
+      - prometheus
+
+  nodeexporter:
+    build: ./monitoring/promethues/node_exporter/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    # image: $AWS_REPO/weather_wiz_app_node_exporter:latest
+    container_name: nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$$$|/)'
+    restart: unless-stopped
+    expose:
+      - 9100
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+
+secrets:
+   app_api_key:
+    file: app_api_secret.txt
+
+networks:
+  weather-app:
+    driver: bridge
+  monitor-net:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana_data:
