@@ -17,9 +17,13 @@
       console.log(resultsContainer);
       while(resultsContainer[0]) {
         resultsContainer[0].parentNode.removeChild(resultsContainer[0]);
-    
     }
     clear_bt.style.visibility = "hidden";
+    const formFields = document.getElementsByClassName('form-control');
+      for (let i = 0; i < formFields.length; i++) {
+        formFields[i].value = '';
+    }
   }); 
+
   }
 }
