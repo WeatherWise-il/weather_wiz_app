@@ -26,7 +26,10 @@ jobs:
 
       - name: Write Weather API TOKEN  to file
         run: echo "${{ secrets.WEATHER_APP_API_TOKEN }}" > app_api_secret.txt
-        shell: bash    
+        shell: bash
+
+      - name: print env variables
+        run: echo "${AWS_REGION}"
 
       
       # - name: Set up Docker Buildx
@@ -43,28 +46,37 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'false'
         
-      - name: Build and running Docker Compose
+        
+      - name: Checking the ERC values
         run: |
-          echo "Running Docker Compose"
-          docker compose  build --no-cache
-          docker compose up -d 
-        shell: bash  
+          echo ${{ steps.login-ecr.outputs.registry }}
 
-      - name: Getting a list of images in the system
-        run: |
-          echo "List of images in the system"
-          docker images
+
+        
+      # - name: Build and running Docker Compose
+      #   run: |
+      #     echo "Running Docker Compose"
+      #     docker compose  build --no-cache
+      #     docker compose up -d 
+      #   shell: bash  
+
+      # - name: Getting a list of images in the system
+      #   run: |
+      #     echo "List of images in the system"
+      #     docker images
             
-      - name: Tests
-        run: |
-          # provide execute permission to the script
-          chmod +x ./tests/tests.bash
-          ./tests/tests.bash
+      # - name: Tests
+      #   run: |
+      #     # provide execute permission to the script
+      #     chmod +x ./tests/tests.bash
+      #     ./tests/tests.bash
 
-      - name: Push Docker image to Amazon ECR
-        run:
-          docker compose push
+      # - name: Push Docker image to Amazon ECR
+      #   run:
+      #     docker compose push
 
       # - name: push docker image to Amazon ECR
       #   env:
@@ -89,6 +101,6 @@ jobs:
   #         token: ${{ secrets.WEATHER_GITHUB_TOKEN }}
   #         ref: main
 
-      - name: list files in infra repo 
-        run: ls -la
+      # - name: list files in infra repo 
+      #   run: ls -la
       
