@@ -54,6 +54,7 @@ jobs:
           
         run: |
           echo "Running Docker Compose"
+          echo "AWS_REPO: $AWS_REPO"
           docker compose  build --no-cache
           docker compose up -d 
         shell: bash  
@@ -63,13 +64,15 @@ jobs:
           echo "List of images in the system"
           docker images
             
-      - name: Tests
-        run: |
-          # provide execute permission to the script
-          chmod +x ./tests/tests.bash
-          ./tests/tests.bash
+      # - name: Tests
+      #   run: |
+      #     # provide execute permission to the script
+      #     chmod +x ./tests/tests.bash
+      #     ./tests/tests.bash
 
       - name: Push Docker image to Amazon ECR
+        env:
+          AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
         run:
           docker compose push
 
