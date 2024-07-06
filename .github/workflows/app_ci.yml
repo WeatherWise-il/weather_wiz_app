@@ -3,7 +3,7 @@ name: Weather wiz CI/CD
 on:
   workflow_dispatch:
   push:
-    branches: ["ci_flow",  "main", "feature*"] 
+    branches: ["ci_flow",  "main", "feature*","gitubaction-dynamic_tags"] 
   # schedule:
   # - cron: "0 1 * * *"
 
@@ -51,6 +51,7 @@ jobs:
       - name: Build and running Docker Compose
         env:
           AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
+          DOCKER_TAG: ${{ github.sha }}
           
         run: |
           echo "Running Docker Compose"

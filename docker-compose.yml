@@ -5,7 +5,7 @@ services:
     build:  ./frontend/
     environment:
       - AWS_REPO=$AWS_REPO
-    image: $AWS_REPO/weather_wiz_app_frontend:latest
+    image: $AWS_REPO/weather_wiz_app_frontend:$DOCKER_TAG
     container_name: nginx-frontend
     restart: always
     networks:
@@ -21,7 +21,7 @@ services:
     container_name: flask-backend
     environment:
        - AWS_REPO=$AWS_REPO
-    image: $AWS_REPO/weather_wiz_app_backend:latest
+    image: $AWS_REPO/weather_wiz_app_backend:$DOCKER_TAG
     secrets:
       - app_api_key
     volumes:
