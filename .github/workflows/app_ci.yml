@@ -74,6 +74,7 @@ jobs:
       - name: Push Docker image to Amazon ECR
         env:
           AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
+          DOCKER_TAG: ${{ github.sha }}
         run:
           docker compose push
 
