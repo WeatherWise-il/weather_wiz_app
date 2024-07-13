@@ -71,17 +71,24 @@ jobs:
         run: |
           # provide execute permission to the script
           chmod +x ./tests/tests.bash
-          # run docker compose
-          docker compose up -d 
+          # run docker compose up
+          docker compose up -d
+          # Running docker compose ls
+          docker compose ls
+          # Runnging docker compose logs  
+          docker compose logs  
+          # Running docker compose ps
+          docker compose ps
+          # Running docker compose top
           # run the tests
           ./tests/tests.bash
 
-      - name: Push Docker image to Amazon ECR
-        env:
-          AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
-          DOCKER_TAG: ${{ github.sha }}
-        run:
-          docker compose push
+      # - name: Push Docker image to Amazon ECR
+      #   env:
+      #     AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
+      #     DOCKER_TAG: ${{ github.sha }}
+      #   run:
+      #     docker compose push
       # - name: push docker image to Amazon ECR
       #   env:
       #     REGISTRY: ${{ steps.login-ecr.outputs.registry }}
