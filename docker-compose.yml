@@ -24,8 +24,6 @@ services:
     image: $AWS_REPO/weather_wiz_app_backend:latest
     secrets:
       - app_api_key
-    volumes:
-      - ./backend:/app  
     networks:
       - weather-app
       - monitor-net
