@@ -70,17 +70,25 @@ jobs:
           DOCKER_TAG: ${{ github.sha }}
         run: |
           # provide execute permission to the script
+          echo "provide execute permission to the script"
           chmod +x ./tests/tests.bash
           # run docker compose up
+          echo "Running docker compose up -d" 
           docker compose up -d
           # Running docker compose ls
+          echo "Running docker compose ls"
           docker compose ls
-          # Runnging docker compose logs  
+          # Runnging docker compose logs
+          echo "Running docker compose logs"  
           docker compose logs  
           # Running docker compose ps
+          echo "Running docker compose ps"
           docker compose ps
           # Running docker compose top
+          echo "Running docker compose top"
+          docker compose top
           # run the tests
+          echo "Running the tests"
           ./tests/tests.bash
 
       # - name: Push Docker image to Amazon ECR

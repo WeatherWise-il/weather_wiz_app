@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # URL of the Flask app
-BASE_URL="http://localhost:80"
+BASE_URL="http://127.0.0.1:80"
 
 # Function to check the status code
 check_status_code() {
