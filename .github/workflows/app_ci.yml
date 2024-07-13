@@ -65,6 +65,9 @@ jobs:
           docker images
             
       - name: Tests
+        env:
+          AWS_REPO: ${{ steps.login-ecr.outputs.registry }}
+          DOCKER_TAG: ${{ github.sha }}
         run: |
           # provide execute permission to the script
           chmod +x ./tests/tests.bash
@@ -79,7 +82,6 @@ jobs:
           DOCKER_TAG: ${{ github.sha }}
         run:
           docker compose push
-
       # - name: push docker image to Amazon ECR
       #   env:
       #     REGISTRY: ${{ steps.login-ecr.outputs.registry }}
