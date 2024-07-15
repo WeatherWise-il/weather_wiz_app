@@ -1,3 +1,5 @@
 Dockerfile
 app.log
 *secret.txt
+.venv
+__pycache__

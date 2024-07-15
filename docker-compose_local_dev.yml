@@ -1,8 +1,11 @@
-name: weatherwiz
+name: 'weather_wiz'
 services:
 
   nginx-frontend:
-    build:  ./frontend/
+    build: ./frontend/
+    environment:
+      - AWS_REPO=183067302538.dkr.ecr.us-east-1.amazonaws.com
+    image: $AWS_REPO/weather_wiz_app_frontend:1.0
     container_name: nginx-frontend
     restart: always
     networks:
@@ -14,8 +17,11 @@ services:
       - flask-backend
 
   flask-backend:
-    build: ./backend/
+    build: ./backend
     container_name: flask-backend
+    environment:
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_backend:1.0
     secrets:
       - app_api_key
     networks:
@@ -27,13 +33,19 @@ services:
 
   mysql-db:
     build: ./db/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_db:1.0
     container_name: mysql-db
-    restart: always
+    restart: unless-stopped
     networks:
       - weather-app
 
   prometheus:
-    image: prom/prometheus:v2.52.0
+    build: ./monitoring/promethues/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_prometheus:1.0
     container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -41,7 +53,7 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
+      - '--storage.tsdb.retention.time=10h'
       - '--web.enable-lifecycle'
     restart: unless-stopped
     expose:
@@ -52,7 +64,10 @@ services:
       org.label-schema.group: "monitoring"
 
   mysql-exporter:
-    image: prom/mysqld-exporter:v0.15.1
+    build: ./monitoring/promethues/mysql_exporter/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_mysql_exporter:1.0
     container_name: mysql-exporter
     command:
       - '--config.my-cnf=/cnf/.my.cnf'
@@ -65,32 +80,40 @@ services:
       - mysql-db
 
   nginx-prometheus-exporter:
-    image: nginx/nginx-prometheus-exporter:1.1.0
+    build: ./monitoring/promethues/nginx_exporter/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_nginx_exporter:1.0
     container_name: nginx-prometheus-exporter
-    networks: 
+    networks:
       - monitor-net
     command: --nginx.scrape-uri=http://nginx-frontend:80/status
     depends_on:
       - nginx-frontend
 
   grafana:
-    image: grafana/grafana:11.0.0
+    build: ./monitoring/grafana/
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=warning
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_grafana:1.0
     container_name: grafana
     ports:
       - 3000:3000
     restart: unless-stopped
     networks:
       - monitor-net
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_LOG_LEVEL=warning
     depends_on:
       - prometheus
 
   nodeexporter:
-    image: prom/node-exporter:v1.8.0
+    build: ./monitoring/promethues/node_exporter/
+    environment:
+      - AWS_REPO=$AWS_REPO
+    image: $AWS_REPO/weather_wiz_app_node_exporter:1.0
     container_name: nodeexporter
     volumes:
       - /proc:/host/proc:ro
@@ -100,7 +123,7 @@ services:
       - '--path.procfs=/host/proc'
       - '--path.rootfs=/rootfs'
       - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$$$|/)'
     restart: unless-stopped
     expose:
       - 9100
@@ -108,7 +131,6 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
-
 
 secrets:
    app_api_key:
@@ -119,7 +141,3 @@ networks:
     driver: bridge
   monitor-net:
     driver: bridge
-
-volumes:
-  prometheus-data:
-  grafana_data:
